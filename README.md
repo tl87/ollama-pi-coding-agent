@@ -20,19 +20,21 @@ It includes:
 
 ## 📁 Project Structure
 
-  .
-   ├──  Dockerfile
-   ├──  models
-   │   └──  models.json
-   ├──  podman-ollama.sh
-   ├── 󰂺 README.md
-   └──  skills
-       ├──  cyber-security-specialist.md
-       ├──  devops-engineer.md
-       ├──  midjourney-prompt-generator.md
-       ├──  no-bs.md
-       ├──  senior-linux-system-administrator.md
-       └──  senior-python-developer.md
+```
+.
+├── Dockerfile
+├── models
+│   └── models.json
+├── podman-ollama.sh
+├── README.md
+└── skills
+    ├── cyber-security-specialist.md
+    ├── devops-engineer.md
+    ├── midjourney-prompt-generator.md
+    ├── no-bs.md
+    ├── senior-linux-system-administrator.md
+    └── senior-python-developer.md
+```
 
 ### Dockerfile
 
