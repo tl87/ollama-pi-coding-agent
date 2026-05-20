@@ -10,6 +10,7 @@
         { "id": "qwen3.5:4b" },
         { "id": "qwen3.5:2b" },
         { "id": "qwen3.5:0.8b" },
+        { "id": "devstral-small-2:24b" },
         { "id": "gpt-oss:20b"}
       ]
     }

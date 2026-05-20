@@ -8,6 +8,7 @@ MODELS=(
   "qwen3.5:4b"
   "qwen3.5:2b"
   "qwen3.5:0.8b"
+  "devstral-small-2:24b"
   "gpt-oss:20b"
 )
 

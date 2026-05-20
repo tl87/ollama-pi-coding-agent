@@ -132,6 +132,7 @@ ollama pull qwen3:14B
 ollama pull qwen3.5:4b
 ollama pull qwen3.5:2b
 ollama pull qwen3.5:0.8b
+ollama pull devstral-small-2:24b
 ollama pull gpt-oss:20b
 ```
 
