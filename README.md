@@ -26,6 +26,7 @@ It includes:
 ├── models
 │   └── models.json
 ├── podman-ollama.sh
+├── docker-ollama.sh
 ├── README.md
 └── skills
     ├── cyber-security-specialist.md
@@ -67,7 +68,7 @@ Defines custom providers and models for pi‑coding‑agent:
 
 ```
 
-### podman-ollama.sh
+### podman-ollama.sh / docker-ollama.sh
 
 A helper script to manage the container:
 
@@ -79,10 +80,15 @@ A helper script to manage the container:
 
 ### Getting Started
 
+You can use either Docker or Podman, what ever you best like.
+
+In the examples below, I will be using podman, but you can just replace podman with docker.
+
 1. Make the script executable:
 
 ```bash
 chmod +x podman-ollama.sh
+chmod +x docker-ollama.sh
 ```
 
 2. Build the Image:
