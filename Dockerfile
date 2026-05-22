@@ -26,11 +26,16 @@ RUN cd /home/pi && \
 # Create config directories
 RUN mkdir -p /home/pi/.pi/agent && \
     mkdir -p /home/pi/.ollama && \
+    mkdir -p /home/pi/.pi/skills && \
     chown -R pi:pi /home/pi
 
 # Copy provider config
 COPY ./models/models.json /home/pi/.pi/agent/models.json
 RUN chown pi:pi /home/pi/.pi/agent/models.json
+
+# Copy skills
+COPY ./skills /home/pi/.pi/agent/skills
+RUN chown -R pi:pi /home/pi/.pi/agent/skills
 
 # Switch to user pi
 USER pi
