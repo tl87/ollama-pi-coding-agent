@@ -1,7 +1,6 @@
 #!/usr/bin/env bash
 CONTAINER_NAME="ollama-pi"
 IMAGE_NAME="ollama-pi-agent"
-
 MODELS=(
   "gemma4:e2b"
   "qwen3:14b"
@@ -15,18 +14,22 @@ MODELS=(
 case "$1" in
   build)
     echo "Building image..."
-    docker buildx build --tag ollama-pi-agent .
+    docker buildx build --tag "$IMAGE_NAME" .
     ;;
+
   start)
     echo "Starting container..."
-    if docker container exists "$CONTAINER_NAME"; then
+
+    if docker container inspect "$CONTAINER_NAME" >/dev/null 2>&1; then
       echo "Container exists — starting..."
       docker start "$CONTAINER_NAME"
+
       if ! docker exec "$CONTAINER_NAME" true 2>/dev/null; then
         echo "Container failed to start. Logs:"
         docker logs "$CONTAINER_NAME"
         exit 1
       fi
+
       docker exec -it "$CONTAINER_NAME" bash
     else
       echo "Container does not exist — creating..."
@@ -36,19 +39,24 @@ case "$1" in
         --user pi \
         --name "$CONTAINER_NAME" \
         "$IMAGE_NAME"
+
       sleep 1
+
       if ! docker exec "$CONTAINER_NAME" true 2>/dev/null; then
         echo "Container failed to start. Logs:"
         docker logs "$CONTAINER_NAME"
         exit 1
       fi
+
       docker exec -it "$CONTAINER_NAME" bash
     fi
     ;;
+
   stop)
     echo "Stopping container..."
     docker stop "$CONTAINER_NAME"
     ;;
+
   attach)
     echo "Attaching to container shell..."
     if ! docker exec "$CONTAINER_NAME" true 2>/dev/null; then
@@ -57,10 +65,12 @@ case "$1" in
     fi
     docker exec -it "$CONTAINER_NAME" bash
     ;;
+
   clean)
     echo "Removing container..."
     docker rm -f "$CONTAINER_NAME"
     ;;
+
   models)
     echo "Installing models..."
     for model in "${MODELS[@]}"; do
@@ -68,6 +78,7 @@ case "$1" in
       docker exec -it "$CONTAINER_NAME" ollama pull "$model"
     done
     ;;
+
   *)
     echo "Usage: $0 {build|start|stop|attach|models|clean}"
     exit 1
