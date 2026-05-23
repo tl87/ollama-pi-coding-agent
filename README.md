@@ -6,7 +6,8 @@ It includes:
 
 - A custom Dockerfile  
 - A `models.json` provider configuration  
-- A management script (`podman-ollama.sh`)  
+- A skills-folder with predefined skills
+- A management script (`docker/podman-ollama.sh`)  
 - Volume mounting of your working directory  
 - Node.js + npm + pi‑coding‑agent installed globally  
 
@@ -26,7 +27,6 @@ It includes:
 ├── podman-ollama.sh
 ├── README.md
 └── src
-    ├── AGENTS.md
     ├── Dockerfile
     ├── models
     └── skills
