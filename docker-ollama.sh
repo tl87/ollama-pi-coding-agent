@@ -1,6 +1,8 @@
 #!/usr/bin/env bash
 CONTAINER_NAME="ollama-pi"
 IMAGE_NAME="ollama-pi-agent"
+MODE_LABEL="ollama-pi.mode"
+
 MODELS=(
   "gemma4:e2b"
   "qwen3:14b"
@@ -11,45 +13,88 @@ MODELS=(
   "gpt-oss:20b"
 )
 
+COMMON_ARGS=(
+  -d
+  -p 11434:11434
+  -v "$(pwd):/workspace:Z"
+  --user pi
+  --name "$CONTAINER_NAME"
+  --pids-limit=4096
+  --memory=20g
+  --cpus=10
+  --restart=on-failure:5
+)
+
+get_container_mode() {
+  docker inspect -f "{{ index .Config.Labels \"$MODE_LABEL\" }}" \
+    "$CONTAINER_NAME" 2>/dev/null
+}
+
+wait_and_attach() {
+  sleep 1
+  if ! docker exec "$CONTAINER_NAME" true 2>/dev/null; then
+    echo "Container failed to start. Logs:"
+    docker logs "$CONTAINER_NAME"
+    exit 1
+  fi
+  docker exec -it "$CONTAINER_NAME" bash
+}
+
+start_container() {
+  local mode="$1"   # "hardened" or "relaxed"
+
+  if docker container inspect "$CONTAINER_NAME" >/dev/null 2>&1; then
+    local existing_mode
+    existing_mode="$(get_container_mode)"
+
+    if [ -n "$existing_mode" ] && [ "$existing_mode" != "$mode" ]; then
+      echo "ERROR: Container '$CONTAINER_NAME' already exists in '$existing_mode' mode,"
+      echo "       but you asked to start it in '$mode' mode."
+      echo "       Run '$0 clean' first if you want to recreate it in '$mode' mode."
+      exit 1
+    fi
+
+    echo "Container exists ($mode mode) — starting..."
+    docker start "$CONTAINER_NAME" >/dev/null
+    wait_and_attach
+    return
+  fi
+
+  echo "Creating container in '$mode' mode..."
+
+  if [ "$mode" = "hardened" ]; then
+    docker run "${COMMON_ARGS[@]}" \
+      --label "$MODE_LABEL=hardened" \
+      --cap-drop=ALL \
+      --security-opt=no-new-privileges \
+      "$IMAGE_NAME"
+  else
+    docker run "${COMMON_ARGS[@]}" \
+      --label "$MODE_LABEL=relaxed" \
+      --cap-drop=ALL \
+      --cap-add=CHOWN \
+      --cap-add=DAC_OVERRIDE \
+      --cap-add=FOWNER \
+      --cap-add=SETUID \
+      --cap-add=SETGID \
+      "$IMAGE_NAME"
+  fi
+
+  wait_and_attach
+}
+
 case "$1" in
   build)
     echo "Building image..."
-    docker buildx build --tag "$IMAGE_NAME" .
+    docker buildx build . --tag "$IMAGE_NAME" -f ./src/Dockerfile
     ;;
 
-  start)
-    echo "Starting container..."
+  start-hardened)
+    start_container "hardened"
+    ;;
 
-    if docker container inspect "$CONTAINER_NAME" >/dev/null 2>&1; then
-      echo "Container exists — starting..."
-      docker start "$CONTAINER_NAME"
-
-      if ! docker exec "$CONTAINER_NAME" true 2>/dev/null; then
-        echo "Container failed to start. Logs:"
-        docker logs "$CONTAINER_NAME"
-        exit 1
-      fi
-
-      docker exec -it "$CONTAINER_NAME" bash
-    else
-      echo "Container does not exist — creating..."
-      docker run -d \
-        -p 11434:11434 \
-        -v "$(pwd)":/workspace:Z \
-        --user pi \
-        --name "$CONTAINER_NAME" \
-        "$IMAGE_NAME"
-
-      sleep 1
-
-      if ! docker exec "$CONTAINER_NAME" true 2>/dev/null; then
-        echo "Container failed to start. Logs:"
-        docker logs "$CONTAINER_NAME"
-        exit 1
-      fi
-
-      docker exec -it "$CONTAINER_NAME" bash
-    fi
+  start-relaxed)
+    start_container "relaxed"
     ;;
 
   stop)
@@ -79,8 +124,20 @@ case "$1" in
     done
     ;;
 
+  status)
+    if docker container inspect "$CONTAINER_NAME" >/dev/null 2>&1; then
+      mode="$(get_container_mode)"
+      state="$(docker inspect -f '{{.State.Status}}' "$CONTAINER_NAME")"
+      echo "Container: $CONTAINER_NAME"
+      echo "State:     $state"
+      echo "Mode:      ${mode:-unknown}"
+    else
+      echo "Container '$CONTAINER_NAME' does not exist."
+    fi
+    ;;
+
   *)
-    echo "Usage: $0 {build|start|stop|attach|models|clean}"
+    echo "Usage: $0 {build|start-hardened|start-relaxed|stop|attach|models|status|clean}"
     exit 1
     ;;
 esac

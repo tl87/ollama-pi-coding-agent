@@ -22,19 +22,15 @@ It includes:
 
 ```
 .
-├── Dockerfile
-├── models
-│   └── models.json
-├── podman-ollama.sh
 ├── docker-ollama.sh
+├── podman-ollama.sh
+├── prune-cleanup-docker.sh
 ├── README.md
-└── skills
-    ├── cyber-security-specialist.md
-    ├── devops-engineer.md
-    ├── midjourney-prompt-generator.md
-    ├── no-bs.md
-    ├── senior-linux-system-administrator.md
-    └── senior-python-developer.md
+└── src
+    ├── AGENTS.md
+    ├── Dockerfile
+    ├── models
+    └── skills
 ```
 
 ### Dockerfile
@@ -68,27 +64,25 @@ Defines custom providers and models for pi‑coding‑agent:
 
 ```
 
-### podman-ollama.sh / docker-ollama.sh
+### podman-ollama.sh
 
 A helper script to manage the container:
 
 - build – build the image
-- start – start the container and attach to it
+- start-hardened – start the container in hardened mode and attach to it
+- start-relaxed – start the container in relaxed mode and attach to it
 - stop – stop the container
 - attach – open a shell inside the container
+- models - download models from ./src/models/models.json
+- status - get container status
 - clean – remove the container
 
 ### Getting Started
-
-You can use either Docker or Podman, what ever you best like.
-
-In the examples below, I will be using podman, but you can just replace podman with docker.
 
 1. Make the script executable:
 
 ```bash
 chmod +x podman-ollama.sh
-chmod +x docker-ollama.sh
 ```
 
 2. Build the Image:
@@ -101,8 +95,11 @@ This build the image named `ollama-pi-agent`.
 
 3. Start the container:
 
+**NOTE**: there are two ways of starting the container, `start-hardened` is more limiting that `start-relaxed`. 
+
 ```bash
-./podman-ollama.sh start
+./podman-ollama.sh start-hardened
+./podman-ollama.sh start-relxed
 ```
 
 Behavior:
