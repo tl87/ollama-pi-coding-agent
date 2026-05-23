@@ -24,7 +24,6 @@ It includes:
 .
 ├── docker-ollama.sh
 ├── podman-ollama.sh
-├── prune-cleanup-docker.sh
 ├── README.md
 └── src
     ├── AGENTS.md
